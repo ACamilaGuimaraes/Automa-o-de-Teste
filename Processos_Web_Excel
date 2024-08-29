@@ -1,0 +1,241 @@
+import tkinter as tk
+from tkinter import messagebox
+import openpyxl
+import logging
+import time
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium import webdriver
+
+# Configuração do logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def initialize_driver():
+    """Inicializa o WebDriver e retorna o driver."""
+    try:
+        driver = webdriver.Chrome()
+        logger.info("Driver do Chrome inicializado.")
+        return driver
+    except Exception as e:
+        logger.error(f"Erro ao inicializar o WebDriver: {e}")
+        raise
+
+def executar_processo1():
+    """Executa o processo 1."""
+    driver = None
+    try:
+        driver = initialize_driver()
+        # Navegar para a página
+        driver.get('https://')#url que será feito todo o processo de automação
+        logger.info("Navegou para a página de login.")
+        
+        # Carregar um arquivo Excel existente
+        workbook = openpyxl.load_workbook('planilha.xlsx')#caminho da planilha que será utilizada para o processo de automação
+        sheet = workbook.active
+
+        # Ler os valores das células
+        login = sheet['A2'].value
+        senha = sheet['B2'].value
+        ambiente = sheet['C2'].value
+
+        logger.info(f"Login: {login}")
+        logger.info(f"Senha: {senha}")
+        logger.info(f"Ambiente: {ambiente}")
+
+        def perform_login(driver, login, senha, ambiente):
+            """Preenche o formulário de login e realiza o login."""
+            try:
+                # Preenchendo o campo de login
+                login_field = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "[formcontrolname='Login']"))
+                )
+                login_field.send_keys(login)
+                logger.info("Campo de login preenchido.")
+
+                # Preenchendo o campo de senha
+                password_field = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "[formcontrolname='Senha']"))
+                )
+                password_field.send_keys(senha)
+                logger.info("Campo de senha preenchido.")
+
+                # Selecionando o ambiente no campo de ambiente
+                ambiente_dropdown = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "[formcontrolname='Ambiente']"))
+                )
+                ambiente_dropdown.send_keys(ambiente)
+                ambiente_dropdown.send_keys(Keys.ENTER)
+                logger.info("Ambiente selecionado.")
+
+                # Clicando no botão de login
+                login_button = WebDriverWait(driver, 30).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, ".btn.float-right"))
+                )
+                login_button.click()
+                logger.info("Botão de login clicado.")
+            except Exception as e:
+                logger.error(f"Erro ao preencher o formulário de login: {e}")
+                raise
+
+        # Executar a função de login
+        perform_login(driver, login, senha, ambiente)
+
+        # Manter o navegador aberto por 10 segundos para visualização
+        time.sleep(10)
+
+        messagebox.showinfo("Info", "Processo 1 executado com sucesso!")
+    except Exception as e:
+        logger.error(f"Erro ao executar o Processo 1: {e}")
+    finally:
+        if driver:
+            driver.quit()  # Fechar o navegador ao final
+
+def executar_processo2():
+    """Executa o processo 2."""
+    driver = None
+    try:
+        driver = initialize_driver()
+        # Carregar um arquivo Excel existente
+        workbook = openpyxl.load_workbook('planilha.xlsx')#caminho da planilha que será utilizada para o processo de automação
+        sheet = workbook.active
+
+        # Ler os valores das células
+        login = sheet['A2'].value
+        senha = sheet['B2'].value
+        ambiente = sheet['C2'].value
+        clientes_prospects = sheet['D2'].value
+
+        logger.info(f"Login: {login}")
+        logger.info(f"Senha: {senha}")
+        logger.info(f"Ambiente: {ambiente}")
+        logger.info(f"Clientes_Prospects: {clientes_prospects}")
+
+        def perform_login(driver, login, senha, ambiente, clientes_prospects):
+            """Preenche o formulário de login e realiza o login."""
+            try:
+                # Navegar para a página
+                driver.get('https://')#url que será feito todo o processo de automação
+                logger.info("Navegou para a página de login.")
+
+                # Preenchendo o campo de login
+                login_field = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "[formcontrolname='Login']"))
+                )
+                login_field.send_keys(login)
+                logger.info("Campo de login preenchido.")
+
+                # Preenchendo o campo de senha
+                password_field = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "[formcontrolname='Senha']"))
+                )
+                password_field.send_keys(senha)
+                logger.info("Campo de senha preenchido.")
+
+                # Selecionando o ambiente no campo de ambiente
+                ambiente_dropdown = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "[formcontrolname='Ambiente']"))
+                )
+                ambiente_dropdown.click()
+                ambiente_dropdown.send_keys(ambiente)
+                ambiente_dropdown.send_keys(Keys.ENTER)
+                logger.info("Ambiente selecionado.")
+
+                # Clicando no botão de login
+                login_button = WebDriverWait(driver, 30).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, ".btn.float-right"))
+                )
+                login_button.click()
+                logger.info("Botão de login clicado.")
+
+                # Esperar a navegação após o login
+                WebDriverWait(driver, 30).until(
+                    EC.url_contains('https://url/pages/principal')#Url que será feito todo o processo de automação
+                )
+                logger.info("Navegação após o login bem-sucedida.")
+
+                # Clicar no menu 'Relatórios'
+                menu_relatorios = WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable((By.XPATH, "/html/body/ngx-app/ngx-pages/ngx-one-column-layout/nb-layout/div[1]/div/div/nb-sidebar[1]/div/div/div/nb-menu/ul/li[5]"))
+                )
+                menu_relatorios.click()
+                logger.info("Ícone 'Relatórios' clicado.")
+
+                # Clicar no submenu 'Listagem Clientes Prospects'
+                listar_clientes_prospects = WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable((By.XPATH, "/html/body/ngx-app/ngx-pages/ngx-one-column-layout/nb-layout/div[1]/div/div/nb-sidebar[1]/div/div/div/nb-menu/ul/li[5]/ul/li[7]/a/span"))
+                )
+                listar_clientes_prospects.click()
+                logger.info("Menu 'Listagem Clientes Prospects' clicado.")
+
+                # Preencher o campo 'Clientes Prospects'
+                campo_clientes_prospects = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "[formcontrolname='ClienteProspect']"))
+                )
+                campo_clientes_prospects.send_keys(clientes_prospects)
+                logger.info(f"Campo 'Clientes Prospects' preenchido com: {clientes_prospects}")
+
+                # Esperar a lista de sugestões aparecer
+                WebDriverWait(driver, 20).until(
+                    EC.presence_of_element_located((By.XPATH, "//mat-option"))
+                )
+                # Selecionar o cliente 
+                suggestion_xpath = f"//mat-option//span[contains(text(), '{clientes_prospects}')]"
+                cliente_option = WebDriverWait(driver, 30).until(
+                    EC.element_to_be_clickable((By.XPATH, suggestion_xpath))
+                )
+                cliente_option.click()
+                logger.info(f"Cliente '{clientes_prospects}' selecionado.")
+
+                # Clicar no botão 'Gerar relatório'
+                gerar_relatorio_button = WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable((By.XPATH, "/html/body/ngx-app/ngx-pages/ngx-one-column-layout/nb-layout/div[1]/div/div/div/div/nb-layout-column/ngx-charts/app-relatorios-prospect/mat-card/mat-card-actions/div/button[2]/span/div"))
+                )
+                gerar_relatorio_button.click()
+                logger.info("Botão 'Gerar relatório' clicado.")
+
+            except Exception as e:
+                logger.error(f"Erro ao preencher o formulário ou ao gerar o relatório: {e}")
+                raise
+            finally:
+                # Manter o navegador aberto por 20 segundos para visualização
+                time.sleep(20)
+                driver.quit()  # Fechar o navegador ao final
+
+        # Executar a função de login
+        perform_login(driver, login, senha, ambiente, clientes_prospects)
+
+        messagebox.showinfo("Info", "Processo 2 executado com sucesso!")
+    except Exception as e:
+        logger.error(f"Erro ao executar o Processo 2: {e}")
+    finally:
+        if driver:
+            driver.quit()  # Fechar o navegador ao final
+
+def sair():
+    root.destroy()
+
+root = tk.Tk()
+root.title("Aplicativo de Automação")
+root.configure(bg="#f0f0f0")  # Cor de fundo do aplicativo
+
+# Ajustar o tamanho da janela
+root.geometry("400x300")  # Largura x Altura
+
+# Label
+label = tk.Label(root, text="Selecione uma opção:", font=("Helvetica", 16), bg="#f0f0f0", fg="#333")
+label.pack(pady=20)
+
+# Botões
+botao1 = tk.Button(root, text="Executar Processo 1", command=executar_processo1, font=("Helvetica", 12), bg="#4CAF50", fg="white", height=2, width=20)
+botao1.pack(pady=10)
+
+botao2 = tk.Button(root, text="Executar Processo 2", command=executar_processo2, font=("Helvetica", 12), bg="#2196F3", fg="white", height=2, width=20)
+botao2.pack(pady=10)
+
+botao_sair = tk.Button(root, text="Sair", command=sair, font=("Helvetica", 7), bg="#f44336", fg="white", height=1, width=10)
+botao_sair.pack(pady=5)
+
+root.mainloop()
